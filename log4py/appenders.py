@@ -27,13 +27,13 @@ import logging, logging.handlers
 import sys
 import os
 
+
 ##############################################################################
 # Map standard log4j appenders to logging handlers
 ##############################################################################
-class ConsoleAppender(logging.StreamHandler,object):
-
+class ConsoleAppender(logging.StreamHandler, object):
   def __init__(self):
-    self.stream = sys.stdout # in log4j stdout is default
+    self.stream = sys.stdout  # in log4j stdout is default
 
   def setTarget(self, target):
     if target == "System.out":
@@ -49,11 +49,12 @@ class ConsoleAppender(logging.StreamHandler,object):
 
   # Supported log4j Options
   Target = property(fget=getTarget, fset=setTarget)
+
   def activateOptions(self):
-    logging.StreamHandler.__init__(self, strm=self.stream)
+    logging.StreamHandler.__init__(self, stream=self.stream)
 
-class FileAppender(logging.FileHandler,object):
 
+class FileAppender(logging.FileHandler, object):
   def __init__(self):
     pass
 
@@ -83,37 +84,36 @@ class FileAppender(logging.FileHandler,object):
   def activateOptions(self):
     logging.FileHandler.__init__(self, self.filename)
 
-class RollingFileAppender(logging.handlers.RotatingFileHandler, object):
 
+class RollingFileAppender(logging.handlers.RotatingFileHandler, object):
   def __init__(self):
     pass
 
   def setMaxFileSize(self, value):
-      # In configuration files, the MaxFileSize option takes an long integer in
-      # the range 0 - 2^63. You can specify the value with the suffixes "KB",
-      # "MB" or "GB" so that the integer is interpreted being expressed
-      # respectively in kilobytes, megabytes or gigabytes. For example, the
-      # value "10KB" will be interpreted as 10240.
-      value = value.strip()
-      suffix = value[-2:]
-      multiplier = 1
-      if suffix == "KB":
-        multiplier = 1024
-        value = int(value[:-2]) * multiplier
-      elif suffix == "MB":
-        multiplier = 1024 * 1024
-        value = int(value[:-2]) * multiplier
-      elif suffix == "GB":
-        multiplier = 1024 * 1024 * 1024
-        value = int(value[:-2]) * multiplier
-      else:
-        value = int(value)
-      self.maxBytes = value
-
+    # In configuration files, the MaxFileSize option takes an long integer in
+    # the range 0 - 2^63. You can specify the value with the suffixes "KB",
+    # "MB" or "GB" so that the integer is interpreted being expressed
+    # respectively in kilobytes, megabytes or gigabytes. For example, the
+    # value "10KB" will be interpreted as 10240.
+    value = value.strip()
+    suffix = value[-2:]
+    multiplier = 1
+    if suffix == "KB":
+      multiplier = 1024
+      value = int(value[:-2]) * multiplier
+    elif suffix == "MB":
+      multiplier = 1024 * 1024
+      value = int(value[:-2]) * multiplier
+    elif suffix == "GB":
+      multiplier = 1024 * 1024 * 1024
+      value = int(value[:-2]) * multiplier
+    else:
+      value = int(value)
+    self.maxBytes = value
 
   def getMaxFileSize(self):
     return str(self.maxBytes)
-  
+
   def setMaxBackupIndex(self, value):
     self.backupCount = int(value)
 
@@ -131,9 +131,10 @@ class RollingFileAppender(logging.handlers.RotatingFileHandler, object):
   MaxFileSize = property(fget=getMaxFileSize, fset=setMaxFileSize)
   MaxBackupIndex = property(fget=getMaxBackupIndex, fset=setMaxBackupIndex)
   File = property(fget=getFile, fset=setFile)
-  
+
   def activateOptions(self):
     logging.handlers.RotatingFileHandler.__init__(self, self.filename)
+
 
 class DailyRollingFileAppender(logging.handlers.TimedRotatingFileHandler, object):
   def __init__(self):
@@ -143,18 +144,18 @@ class DailyRollingFileAppender(logging.handlers.TimedRotatingFileHandler, object
     self.pattern = pattern.strip()
     # TODO : support the log4j patterns more accurately and without hardcoding
     if self.pattern == ".yyyy-ww":
-      self.when="W0"
+      self.when = "W0"
     elif self.pattern == ".yyyy-MM-dd":
-      self.when="midnight"
+      self.when = "midnight"
     elif self.pattern == ".yyyy-MM-dd-HH":
-      self.when="H"
+      self.when = "H"
     elif self.pattern == ".yyyy-MM-dd-HH-mm":
-      self.when="M"
+      self.when = "M"
     elif self.pattern == ".yyyy-MM-dd-HH-mm-ss":
-      self.when="S"
+      self.when = "S"
     else:
       raise ValueError
- 
+
   def getDatePattern(self):
     return self.pattern
 
@@ -168,8 +169,10 @@ class DailyRollingFileAppender(logging.handlers.TimedRotatingFileHandler, object
   # Supported log4j Options
   File = property(fget=getFile, fset=setFile)
   DatePattern = property(fget=getDatePattern, fset=setDatePattern)
+
   def activateOptions(self):
     logging.handlers.TimedRotatingFileHandler.__init__(self, self.filename, self.when)
+
 
 class SyslogAppender(logging.handlers.SysLogHandler, object):
   def __init__(self):
@@ -192,7 +195,7 @@ class SyslogAppender(logging.handlers.SysLogHandler, object):
     if len(addr) == 1:
       addr.append(logging.handlers.SYSLOG_UDP_PORT)
     self.address = tuple(addr)
-    
+
   def getSyslogHost(self):
     if len(self.adddress) == 2:
       return "%s:%s" % self.address
@@ -202,5 +205,6 @@ class SyslogAppender(logging.handlers.SysLogHandler, object):
   # Support log4j properites
   Facility = property(fget=getFacility, fset=setFacility)
   SyslogHost = property(fget=getSyslogHost, fset=setSyslogHost)
+
   def activateOptions(self):
     logging.handlers.SysLogHandler.__init__(self, self.address, self.facility)

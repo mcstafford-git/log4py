@@ -32,14 +32,16 @@ from appenders import *
 from layouts import *
 
 # Map log4j levels to python logging levels
-_LEVEL_TRANS = {"ALL": logging.NOTSET,
-                "DEBUG": logging.DEBUG,
-                "INFO": logging.INFO,
-                "WARN": logging.WARNING,
-                "ERROR": logging.ERROR,
-                "FATAL": logging.FATAL,
-                "OFF": logging.FATAL + 1
-               }
+_LEVEL_TRANS = {
+  "ALL": logging.NOTSET,
+  "DEBUG": logging.DEBUG,
+  "INFO": logging.INFO,
+  "WARN": logging.WARNING,
+  "ERROR": logging.ERROR,
+  "FATAL": logging.FATAL,
+  "OFF": logging.FATAL + 1
+}
+
 
 def _parsePropertiesFile(f):
   """Parse a Java Properties file into a python dictionary.
@@ -49,7 +51,7 @@ def _parsePropertiesFile(f):
   """
   if isinstance(f, str):
     f = open(f)
- 
+
   result = {}
   # The stream is assumed to be using the ISO 8859-1 character encoding
   for line in codecs.iterdecode(f, "iso-8859-1"):
@@ -73,20 +75,23 @@ def _parsePropertiesFile(f):
       # terminator.
       if char in ('=', ':', ' ', '\t', '\f'):
         key = line[0:i]
-        value = line[i+1:].lstrip()
+        value = line[i + 1:].lstrip()
         result[key] = value
         break
   return result
 
+
 def _import_handler(name):
   if name.startswith("org.apache.log4j."):
     name = name[len("org.apache.log4j."):]
-  return eval(name) # SECURITY HOLE, ARBITRARY PYTHON CODE CAN BE PLACED IN THE CONFIG FILE
+  return eval(name)  # SECURITY HOLE, ARBITRARY PYTHON CODE CAN BE PLACED IN THE CONFIG FILE
+
 
 def _import_layout(name):
   if name.startswith("org.apache.log4j."):
     name = name[len("org.apache.log4j."):]
-  return eval(name) # SECURITY HOLE, ARBITRARY PYTHON CODE CAN BE PLACED IN THE CONFIG FILE
+  return eval(name)  # SECURITY HOLE, ARBITRARY PYTHON CODE CAN BE PLACED IN THE CONFIG FILE
+
 
 def fileConfig(f):
   props = _parsePropertiesFile(f)
@@ -122,22 +127,22 @@ def fileConfig(f):
   for logger, appenders in loggers.items():
     for appender in appenders:
       layout = None
-      appenderKey = "log4j.appender."+appender
+      appenderKey = "log4j.appender." + appender
       appenderClass = props[appenderKey]
       klass = _import_handler(appenderClass)
       handler = klass()
       # Deal with appender options
-      appenderOptions = filter(lambda x: x.startswith(appenderKey+"."), props.keys())
+      appenderOptions = filter(lambda x: x.startswith(appenderKey + "."), props.keys())
       for appenderOption in appenderOptions:
-        opt = appenderOption[len(appenderKey+"."):]
+        opt = appenderOption[len(appenderKey + "."):]
         value = props[appenderOption].strip()
         if opt.endswith("layout"):
           layoutClass = value
           klass = _import_layout(layoutClass)
           layout = klass()
-          layoutOptions = filter(lambda x: x.startswith(appenderKey+".layout."), props.keys())
+          layoutOptions = filter(lambda x: x.startswith(appenderKey + ".layout."), props.keys())
           for layoutOption in layoutOptions:
-            opt = layoutOption[len(appenderKey+".layout."):]
+            opt = layoutOption[len(appenderKey + ".layout."):]
             value = props[layoutOption].strip()
             setattr(layout, opt, value)
         elif opt.endswith("filter"):
